@@ -1,26 +1,118 @@
-Quagga.init({
-    inputStream: {
-        name: "Live",
-        type: "LiveStream",
-        target: document.querySelector('#scanner-container'),
-        constraints: {
-            width: 640,
-            height: 480,
-            facingMode: "environment" // back camera
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Code 128 Barcode Scanner</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
         }
-    },
-    decoder: {
-        readers: ["code_128_reader"]
-    },
-    locate: true, // Enables barcode location for better accuracy
-    numOfWorkers: 4, // Increase the number of workers for more performance
-    locate: true,
-    frequency: 10 // Adjust the scan frequency for real-time results
-}, function(err) {
-    if (err) {
-        console.error(err);
-        return;
-    }
-    console.log("QuaggaJS initialized.");
-    Quagga.start(); // Start the scanner
-});
+
+        #scanner-container {
+            width: 100%;
+            height: 300px;
+            margin: 20px auto;
+            border-radius: 10px;
+            border: 5px solid #007bff;
+            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        #result-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        #barcode-result {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+            margin-left: 10%;
+        }
+
+        #button-container {
+            margin-right: 10%;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            color: white;
+            background-color: #007bff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Code 128 Barcode Scanner</h1>
+    <div id="scanner-container"></div>
+    
+    <div id="result-container">
+        <div id="barcode-result">Waiting for barcode...</div>
+        <div id="button-container">
+            <button class="btn" onclick="goToLink()">Go to link</button>
+            <button class="btn" onclick="checkInfo()">Check info</button>
+        </div>
+    </div>
+
+    <script>
+        // Initialize QuaggaJS with Code 128 reader
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: document.querySelector('#scanner-container'),
+                constraints: {
+                    width: 640,
+                    height: 480,
+                    facingMode: "environment" // Use back camera
+                }
+            },
+            decoder: {
+                readers: ["code_128_reader"] // Only Code 128
+            },
+            locate: true, // Helps with finding the barcode
+            numOfWorkers: 4 // Performance optimization
+        }, function(err) {
+            if (err) {
+                console.error(err);
+                return;
+            }
+            console.log("QuaggaJS initialized.");
+            Quagga.start(); // Start the camera and barcode detection
+        });
+
+        // Handle barcode detection
+        Quagga.onDetected(function(result) {
+            var code = result.codeResult.code;
+            document.getElementById('barcode-result').innerText = `Barcode: ${code}`;
+        });
+
+        // Button functionalities (to be defined later)
+        function goToLink() {
+            // Function to go to a specific link
+            console.log("Go to link button clicked.");
+        }
+
+        function checkInfo() {
+            // Function to check the barcode information
+            console.log("Check info button clicked.");
+        }
+    </script>
+</body>
+</html>
