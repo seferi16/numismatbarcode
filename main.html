@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Reader</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
+    <style>
+        #camera {
+            width: 100%;
+            height: auto;
+        }
+        #result {
+            margin-top: 10px;
+            font-size: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Barcode Reader</h1>
+    <div id="camera"></div>
+    <div id="result">Scan a barcode to see the result here.</div>
+
+    <script>
+        Quagga.init({
+            inputStream: {
+                name: "Live",
+                type: "LiveStream",
+                target: document.querySelector('#camera'), // Or '#yourElement' (optional)
+                constraints: {
+                    facingMode: "environment" // Use the rear camera on mobile devices
+                },
+            },
+            decoder: {
+                readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "upc_reader", "upc_e_reader", "codabar_reader", "i2of5_reader"]
+            },
+        }, (err) => {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            console.log("Initialization finished. Ready to start");
+            Quagga.start();
+        });
+
+        Quagga.onDetected((data) => {
+            const result = data.codeResult.code;
+            document.getElementById('result').innerText = `Detected barcode: ${result}`;
+            console.log(`Detected barcode: ${result}`);
+            Quagga.stop(); // Stop after detecting one barcode
+        });
+    </script>
+</body>
+</html>
