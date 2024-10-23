@@ -3,51 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Barcode Reader</title>
+    <title>Barcode Scanner</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/quagga/0.12.1/quagga.min.js"></script>
     <style>
-        #camera {
+        #scanner-container {
             width: 100%;
-            height: auto;
+            height: 300px;
+            border: 2px solid black;
+            margin: 20px auto;
         }
-        #result {
-            margin-top: 10px;
+        #barcode-result {
+            text-align: center;
             font-size: 20px;
+            margin-top: 20px;
         }
     </style>
 </head>
 <body>
-    <h1>Barcode Reader</h1>
-    <div id="camera"></div>
-    <div id="result">Scan a barcode to see the result here.</div>
+    <h1>Barcode Scanner</h1>
+    <div id="scanner-container"></div>
+    <div id="barcode-result">No barcode scanned yet.</div>
 
     <script>
+        // Initialize QuaggaJS to scan barcodes
         Quagga.init({
             inputStream: {
                 name: "Live",
                 type: "LiveStream",
-                target: document.querySelector('#camera'), // Or '#yourElement' (optional)
+                target: document.querySelector('#scanner-container'), // Scanning area in the HTML
                 constraints: {
-                    facingMode: "environment" // Use the rear camera on mobile devices
-                },
+                    width: 640,
+                    height: 480,
+                    facingMode: "environment" // Use the back camera
+                }
             },
             decoder: {
-                readers: ["code_128_reader", "ean_reader", "ean_8_reader", "code_39_reader", "code_39_vin_reader", "upc_reader", "upc_e_reader", "codabar_reader", "i2of5_reader"]
-            },
-        }, (err) => {
+                readers: ["code_128_reader", "ean_reader", "ean_8_reader", "upc_reader", "upc_e_reader"] // Supported barcode types
+            }
+        }, function(err) {
             if (err) {
-                console.log(err);
+                console.error(err);
                 return;
             }
-            console.log("Initialization finished. Ready to start");
-            Quagga.start();
+            console.log("QuaggaJS initialized.");
+            Quagga.start(); // Start the barcode scanner
         });
 
-        Quagga.onDetected((data) => {
-            const result = data.codeResult.code;
-            document.getElementById('result').innerText = `Detected barcode: ${result}`;
-            console.log(`Detected barcode: ${result}`);
-            Quagga.stop(); // Stop after detecting one barcode
+        // Detect barcodes and display results
+        Quagga.onDetected(function(result) {
+            var code = result.codeResult.code;
+            document.getElementById('barcode-result').innerText = "Barcode Scanned: " + code;
         });
     </script>
 </body>
