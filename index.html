@@ -11,22 +11,55 @@
             font-family: Arial, sans-serif;
             background-color: #f4f4f4;
             text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
         }
-        
-        #reader {
+
+        #info {
             width: 300px;
-            margin: 20px auto;
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            text-align: center;
+            background-color: #f9f9f9;
         }
-        
-        #result {
-            margin-top: 20px;
-            font-size: 18px;
+
+        #info img {
+            max-width: 100%;
+            margin: 10px auto;
+            display: block;
         }
-        
-        #product-image {
-            max-width: 200px;
-            margin-top: 10px;
-            border-radius: 10px;
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            font-weight: bold;
+            color: #333;
+            background-color: #e9ecef; /* Light gray background for headers */
+        }
+
+        tr:nth-child(odd) {
+            background-color: #f2f2f2; /* Light gray for odd rows */
+        }
+
+        tr:nth-child(even) {
+            background-color: #ffffff; /* White for even rows */
+        }
+
+        tr:hover {
+            background-color: #d1ecf1; /* Light blue on hover */
+            transition: background-color 0.3s;
         }
 
         .btn {
@@ -49,55 +82,10 @@
 </head>
 <body>
 
-    <!-- <div id="result">
-        <p id="name-tr"></p>
-        <img id="product-image" src="" alt="Product Image" style="display:none;">
-        <button id="product-link" class="btn" onclick="goToProduct()" style="display:none;">Go to Product</button>
-    </div> -->
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-        #info {
-            width: 300px;
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            text-align: center;
-            background-color: #f9f9f9;
-        }
-        #info img {
-            max-width: 100px;
-            margin: 10px auto;
-            display: block;
-        }
-        .info-text {
-            font-size: 16px;
-            margin: 5px 0;
-        }
-        #reader__scan_region {
-            width: 300px;
-            margin-top: 20px;
-        }
-        .btn {
-            margin-top: 10px;
-            padding: 8px 12px;
-            font-size: 16px;
-            cursor: pointer;
-        }
-    </style>
-</head>
-<body>
-    <h1>QR Kod Ürün Tarayıcı</h1>
+    <h1>Numismat.net Ürün Tarayıcı</h1>
     
     <div id="info">
-        <img id="product-image" src="placeholder.jpg" alt="Ürün Görseli" style="max-width: 100%;">
+        <img id="product-image" src="placeholder.jpg" alt="Ürün Görseli">
         <table>
             <tr>
                 <th>Başlık:</th>
@@ -113,6 +101,7 @@
             </tr>
         </table>
         <button id="product-link" class="btn" onclick="goToProduct()" style="display:none;">Ürüne Git</button>
+        <button id="rescan-button" class="btn" onclick="rescan()" style="margin-top: 10px;">Yeniden Tara</button>
     </div>
 
     <div id="reader__scan_region"></div>
@@ -162,6 +151,17 @@
             if (link) {
                 window.location.href = link;
             }
+        }
+
+        function rescan() {
+            html5QrcodeScanner.clear();
+            html5QrcodeScanner.render(onScanSuccess); // Start scanning again
+            // Optionally clear the product information
+            document.getElementById("name-tr").innerText = "[Henüz taranmadı.]";
+            document.getElementById("price").innerText = "[Henüz taranmadı.]";
+            document.getElementById("model").innerText = "[Henüz taranmadı.]";
+            document.getElementById("product-image").src = "placeholder.jpg";
+            document.getElementById("product-link").style.display = "none";
         }
     </script>
 </body>
