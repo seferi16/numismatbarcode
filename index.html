@@ -101,6 +101,7 @@
             </tr>
         </table>
         <button id="product-link" class="btn" onclick="goToProduct()" style="display:none;">Ürüne Git</button>
+        <button id="sold-link" class="btn" onclick="productSold()" style="display:none;">Ürün Satıldı</button>
         <button id="rescan-button" class="btn" onclick="rescan()" style="margin-top: 10px;">Yeniden Tara</button>
     </div>
 
@@ -134,6 +135,7 @@
                         document.getElementById("model").innerText = product.model;
                         document.getElementById("product-image").src = product.image;
                         document.getElementById("product-link").style.display = "inline-block";
+                        document.getElementById("sold-link").style.display = "inline-block";
                         document.getElementById("product-link").setAttribute("data-link", product.link);
                     } else {
                         document.getElementById("name-tr").innerText = "[Ürün bulunamadı]";
@@ -141,6 +143,7 @@
                         document.getElementById("model").innerText = "[Ürün bulunamadı]";
                         document.getElementById("product-image").src = "placeholder.jpg";
                         document.getElementById("product-link").style.display = "none";
+                        document.getElementById("sold-link").style.display = "none";
                     }
                 }
             });
@@ -162,6 +165,39 @@
             document.getElementById("model").innerText = "[Henüz taranmadı.]";
             document.getElementById("product-image").src = "placeholder.jpg";
             document.getElementById("product-link").style.display = "none";
+            document.getElementById("sold-link").style.display = "none";
+        }
+
+        function productSold() {
+            // Your bot's API token
+            const botToken = '5191762597:AAH6kIJsjfuX6DIbbsfskSrBiNTQI5v8bSk';
+            // The chat ID of the user or group where you want to send the message
+            const chatId = '423739694';
+            // The message you want to send
+            const messageText = `${document.getElementById("name-tr").innerText} ${document.getElementById("model").innerText} sold. Please remove from the website.`;
+
+            const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&parse_mode=Markdown&text=${messageText}`;
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: messageText
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    console.log('Message sent successfully:', data);
+                } else {
+                    console.error('Error sending message:', data);
+                }
+            })
+            .catch(error => console.error('Request failed:', error));
+
         }
     </script>
 </body>
