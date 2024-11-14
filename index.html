@@ -108,38 +108,15 @@
     <div id="reader__scan_region"></div>
 
     <script defer>
-        <script defer>
-    function onScanSuccess(decodedText, decodedResult) {
-        console.log(`QR Kod tespit edildi: ${decodedText}`);
-        html5Qrcode.stop();  // Stop after successful scan
-        fetchProductData(decodedText);  // Fetch product info based on scanned link
-    }
+        function onScanSuccess(qrMessage) {
+            console.log(QR Kod tespit edildi: ${qrMessage});
+            html5QrcodeScanner.clear();
+            fetchProductData(qrMessage);
+        }
 
-    function startQrScanner() {
-        const html5Qrcode = new Html5Qrcode("reader__scan_region");
-        
-        navigator.mediaDevices.getUserMedia({
-            video: {
-                facingMode: "environment",
-                width: { ideal: 1280 },  // High resolution
-                height: { ideal: 720 },
-                zoom: 1.5  // Set your desired zoom level here
-            }
-        }).then(stream => {
-            html5Qrcode.start(
-                { facingMode: "environment" },
-                {
-                    fps: 10,  // Scanning speed
-                    qrbox: 350  // QR code box size, increased for better reading
-                },
-                onScanSuccess
-            ).catch(err => {
-                console.error("QR scanner error: ", err);
-            });
-        }).catch(err => {
-            console.error("Could not access the camera: ", err);
-        });
-    }
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader__scan_region", { fps: 30, qrbox: 450 });
+        html5QrcodeScanner.render(onScanSuccess);
+
         function fetchProductData(qrLink) {
             Papa.parse("products.csv", {
                 download: true,
@@ -153,7 +130,7 @@
                         // Calculate and format price with tax
                         const basePrice = parseFloat(product.price);
                         const taxPrice = (basePrice * 1.2).toFixed(2);
-                        document.getElementById("price").innerText = `₺${taxPrice}`;
+                        document.getElementById("price").innerText = ₺${taxPrice};
                         
                         document.getElementById("model").innerText = product.model;
                         document.getElementById("product-image").src = product.image;
@@ -197,9 +174,9 @@
             // The chat ID of the user or group where you want to send the message
             const chatId = '423739694';
             // The message you want to send
-            const messageText = `${document.getElementById("name-tr").innerText} ${document.getElementById("model").innerText} sold. Please remove from the website.`;
+            const messageText = ${document.getElementById("name-tr").innerText} ${document.getElementById("model").innerText} sold. Please remove from the website.;
 
-            const url = `https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&parse_mode=Markdown&text=${messageText}`;
+            const url = https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&parse_mode=Markdown&text=${messageText};
 
             fetch(url, {
                 method: 'POST',
