@@ -114,7 +114,7 @@
             fetchProductData(qrMessage);
         }
 
-        const html5QrcodeScanner = new Html5QrcodeScanner("reader__scan_region", { fps: 30, qrbox: 450 });
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader__scan_region", { fps: 10, qrbox: 250 });
         html5QrcodeScanner.render(onScanSuccess);
 
         function fetchProductData(qrLink) {
@@ -201,4 +201,4 @@
         }
     </script>
 </body>
-</html>
+</html> 
