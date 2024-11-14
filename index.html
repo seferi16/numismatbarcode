@@ -109,7 +109,7 @@
 
     <script defer>
         function onScanSuccess(qrMessage) {
-            console.log(QR Kod tespit edildi: ${qrMessage});
+            console.log('QR Kod tespit edildi');
             html5QrcodeScanner.clear();
             fetchProductData(qrMessage);
         }
