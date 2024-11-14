@@ -45,7 +45,7 @@
         // Set your Telegram bot token and chat ID here
         const TELEGRAM_BOT_TOKEN = '5191762597:AAH6kIJsjfuX6DIbbsfskSrBiNTQI5v8bSk';
         const TELEGRAM_CHAT_ID = '423739694';
-        const DEFAULT_ZOOM =5;
+        const DEFAULT_ZOOM =3;
 
         function onScanSuccess(qrMessage) {
             console.log(`QR Kod tespit edildi: ${qrMessage}`);
@@ -53,7 +53,7 @@
             fetchProductData(qrMessage); // Fetch product data
         }
 
-        const html5QrcodeScanner = new Html5QrcodeScanner("reader__scan_region", { fps: 20, qrbox: 500 });
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader__scan_region", { fps: 10, qrbox: 450 });
         html5QrcodeScanner.render(onScanSuccess, undefined, adjustZoom);
 
         function adjustZoom() {
