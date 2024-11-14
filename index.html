@@ -45,7 +45,7 @@
         // Set your Telegram bot token and chat ID here
         const TELEGRAM_BOT_TOKEN = '5191762597:AAH6kIJsjfuX6DIbbsfskSrBiNTQI5v8bSk';
         const TELEGRAM_CHAT_ID = '423739694';
-        const DEFAULT_ZOOM =2;
+        const DEFAULT_ZOOM =5;
 
         function onScanSuccess(qrMessage) {
             console.log(`QR Kod tespit edildi: ${qrMessage}`);
@@ -53,7 +53,7 @@
             fetchProductData(qrMessage); // Fetch product data
         }
 
-        const html5QrcodeScanner = new Html5QrcodeScanner("reader__scan_region", { fps: 10, qrbox: 350 });
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader__scan_region", { fps: 20, qrbox: 500 });
         html5QrcodeScanner.render(onScanSuccess, undefined, adjustZoom);
 
         function adjustZoom() {
@@ -62,7 +62,7 @@
 
             if (videoTracks && videoTracks.applyConstraints) {
                 videoTracks.applyConstraints({
-                    advanced: [{ zoom: DEFAULT_ZOOM }]
+                    advanced: [{ zoom: DEFAULT_ZOOM, focusMode:"continous" }]
                 }).catch(error => console.warn("Zoom not supported on this device:", error));
             } else {
                 console.warn("Zoom adjustment not available.");
