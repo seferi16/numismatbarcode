@@ -43,8 +43,9 @@
 
     <script defer>
         // Set your Telegram bot token and chat ID here
-        const TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN";
-        const TELEGRAM_CHAT_ID = "YOUR_CHAT_ID";
+        const TELEGRAM_BOT_TOKEN = '5191762597:AAH6kIJsjfuX6DIbbsfskSrBiNTQI5v8bSk';
+        const TELEGRAM_CHAT_ID = '423739694';
+        const DEFAULT_ZOOM =2;
 
         function onScanSuccess(qrMessage) {
             console.log(`QR Kod tespit edildi: ${qrMessage}`);
@@ -52,8 +53,21 @@
             fetchProductData(qrMessage); // Fetch product data
         }
 
-        const html5QrcodeScanner = new Html5QrcodeScanner("reader__scan_region", { fps: 10, qrbox: 500 });
-        html5QrcodeScanner.render(onScanSuccess);
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader__scan_region", { fps: 10, qrbox: 350 });
+        html5QrcodeScanner.render(onScanSuccess, undefined, adjustZoom);
+
+        function adjustZoom() {
+            // Access the media stream from the camera
+            const videoTracks = html5QrcodeScanner.getRunningTrack();
+
+            if (videoTracks && videoTracks.applyConstraints) {
+                videoTracks.applyConstraints({
+                    advanced: [{ zoom: DEFAULT_ZOOM }]
+                }).catch(error => console.warn("Zoom not supported on this device:", error));
+            } else {
+                console.warn("Zoom adjustment not available.");
+            }
+        }
 
         function fetchProductData(qrLink) {
             Papa.parse("products.csv", {
@@ -91,35 +105,32 @@
         }
 
         function markAsSold() {
-            // Your bot's API token
-            const botToken = '5191762597:AAH6kIJsjfuX6DIbbsfskSrBiNTQI5v8bSk';
-            // The chat ID of the user or group where you want to send the message
-            const chatId = '423739694';
-            // The message you want to send
-            const messageText = ${document.getElementById("name-tr").innerText} ${document.getElementById("model").innerText} sold. Please remove from the website.;
+            const productName = document.getElementById("name-tr").innerText;
+            const productPrice = document.getElementById("price").innerText;
+            const productModel = document.getElementById("model").innerText;
 
-            const url = https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&parse_mode=Markdown&text=${messageText};
+            const message = `Ürün Satıldı!\n\n` +
+                            `Başlık: ${productName}\n` +
+                            `Fiyat: ${productPrice}\n` +
+                            `Stok Kodu: ${productModel}`;
 
-            fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+            // Send message via Telegram API
+            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    chat_id: chatId,
-                    text: messageText
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: message
                 })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.ok) {
-                    console.log('Message sent successfully:', data);
+            .then(response => {
+                if (response.ok) {
+                    console.log("Telegram mesajı başarıyla gönderildi!");
                 } else {
-                    console.error('Error sending message:', data);
+                    console.log("Telegram mesajı gönderilemedi.");
                 }
             })
-            .catch(error => console.error('Request failed:', error));
-
+            .catch(error => console.error("Telegram API hatası:", error));
         }
 
         function rescan() {
