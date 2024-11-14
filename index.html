@@ -7,60 +7,7 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f4f4;
-            text-align: center;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-        }
-
-        #info {
-            width: 300px;
-            border: 1px solid #ccc;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 8px;
-            background-color: #f9f9f9;
-        }
-
-        #info img {
-            max-width: 100%;
-            margin: 10px auto;
-            display: block;
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        th, td {
-            padding: 8px;
-            text-align: left;
-        }
-
-        th {
-            font-weight: bold;
-            color: #333;
-            background-color: #e9ecef;
-        }
-
-        tr:nth-child(odd) {
-            background-color: #f2f2f2;
-        }
-
-        tr:nth-child(even) {
-            background-color: #ffffff;
-        }
-
-        tr:hover {
-            background-color: #d1ecf1;
-            transition: background-color 0.3s;
-        }
-
+        /* ... your existing styles ... */
         .btn {
             padding: 10px 20px;
             font-size: 16px;
@@ -70,6 +17,9 @@
             cursor: pointer;
             background-color: #007bff;
             color: white;
+        }
+        .btn-sold {
+            background-color: #28a745; /* Green color for Sold button */
         }
     </style>
 </head>
@@ -85,24 +35,27 @@
             <tr><th>Stok Kodu:</th><td id="model">[Henüz taranmadı.]</td></tr>
         </table>
         <button id="product-link" class="btn" onclick="goToProduct()" style="display:none;">Ürüne Git</button>
+        <button id="sold-button" class="btn btn-sold" onclick="markAsSold()" style="display:none;">Ürün Satıldı</button>
         <button id="rescan-button" class="btn" onclick="rescan()">Yeniden Tara</button>
     </div>
 
     <div id="reader__scan_region"></div>
 
     <script defer>
+        // Set your Telegram bot token and chat ID here
+        const TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN";
+        const TELEGRAM_CHAT_ID = "YOUR_CHAT_ID";
+
         function onScanSuccess(qrMessage) {
             console.log(`QR Kod tespit edildi: ${qrMessage}`);
             html5QrcodeScanner.clear(); // Stop scanner after successful read
             fetchProductData(qrMessage); // Fetch product data
         }
 
-        // Initialize the QR code scanner with a larger scanning box for better readability
-        const html5QrcodeScanner = new Html5QrcodeScanner("reader__scan_region", { fps: 10, qrbox: 350 });
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader__scan_region", { fps: 10, qrbox: 500 });
         html5QrcodeScanner.render(onScanSuccess);
 
         function fetchProductData(qrLink) {
-            // Adjust CSV file URL or location if necessary
             Papa.parse("products.csv", {
                 download: true,
                 header: true,
@@ -116,6 +69,7 @@
                         document.getElementById("model").innerText = product.model;
                         document.getElementById("product-image").src = product.image;
                         document.getElementById("product-link").style.display = "inline-block";
+                        document.getElementById("sold-button").style.display = "inline-block";
                         document.getElementById("product-link").setAttribute("data-link", product.link);
                     } else {
                         document.getElementById("name-tr").innerText = "[Ürün bulunamadı]";
@@ -123,6 +77,7 @@
                         document.getElementById("model").innerText = "[Ürün bulunamadı]";
                         document.getElementById("product-image").src = "placeholder.jpg";
                         document.getElementById("product-link").style.display = "none";
+                        document.getElementById("sold-button").style.display = "none";
                     }
                 }
             });
@@ -135,14 +90,47 @@
             }
         }
 
+        function markAsSold() {
+            // Your bot's API token
+            const botToken = '5191762597:AAH6kIJsjfuX6DIbbsfskSrBiNTQI5v8bSk';
+            // The chat ID of the user or group where you want to send the message
+            const chatId = '423739694';
+            // The message you want to send
+            const messageText = ${document.getElementById("name-tr").innerText} ${document.getElementById("model").innerText} sold. Please remove from the website.;
+
+            const url = https://api.telegram.org/bot${botToken}/sendMessage?chat_id=${chatId}&parse_mode=Markdown&text=${messageText};
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: messageText
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    console.log('Message sent successfully:', data);
+                } else {
+                    console.error('Error sending message:', data);
+                }
+            })
+            .catch(error => console.error('Request failed:', error));
+
+        }
+
         function rescan() {
             html5QrcodeScanner.clear();
-            html5QrcodeScanner.render(onScanSuccess); // Restart scanner
+            html5QrcodeScanner.render(onScanSuccess);
             document.getElementById("name-tr").innerText = "[Henüz taranmadı.]";
             document.getElementById("price").innerText = "[Henüz taranmadı.]";
             document.getElementById("model").innerText = "[Henüz taranmadı.]";
             document.getElementById("product-image").src = "placeholder.jpg";
             document.getElementById("product-link").style.display = "none";
+            document.getElementById("sold-button").style.display = "none";
         }
     </script>
 </body>
