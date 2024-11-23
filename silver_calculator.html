@@ -87,7 +87,9 @@
 </head>
 <body>
     <div>
-    <h1> Numismat.net Gümüş Hesaplama</h1>
+    <h1> Numismat.net Gümüş Hesaplama </h1>
+
+
     <div style="display: flex; align-items: center; justify-content: space-between;">
         <!-- Display field for buyPrice -->
         <div style="flex: 1; margin-right: 10px;">
@@ -122,33 +124,46 @@
                 <!-- Results will be displayed here -->
             </tbody>
         </table>
+        <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank">Güncel Fiyat için Proxy Aktif etmek gerekebilir.</a>
     </div>
 
     <script>
         const url = "https://altin.doviz.com/gumus";
         const proxy = "https://cors-anywhere.herokuapp.com/";
+        // const silverPrice = 34.72;
 
         async function fetchSilverPrice() {
-            try {
-                const response = await fetch(proxy + url);
-                const html = await response.text();
+        const silver_default = 34.75; // Set your default silver price here
 
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, "text/html");
+        try {
+            const response = await fetch(proxy + url);
+            const html = await response.text();
 
-                const silverPriceElement = doc.querySelector('div[data-socket-key="gumus"][data-socket-attr="s"]');
-                const silverPrice = silverPriceElement ? parseFloat(silverPriceElement.textContent.replace(',', '.')) : null;
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
 
-                if (silverPrice) {
-                    document.getElementById('buyPrice').value = silverPrice;
-                    document.getElementById('sellPrice').value = (silverPrice * 1.05).toFixed(2); // Adding a 5% markup for sell price
-                }
+            const silverPriceElement = doc.querySelector('div[data-socket-key="gumus"][data-socket-attr="s"]');
+            const silverPrice = silverPriceElement ? parseFloat(silverPriceElement.textContent.replace(',', '.')) : null;
 
-                calculateValues();
-            } catch (error) {
-                console.error("Error fetching silver price:", error);
+            if (silverPrice) {
+                document.getElementById('buyPrice').value = silverPrice;
+                document.getElementById('sellPrice').value = (silverPrice * 1.05).toFixed(2); // Adding a 5% markup for sell price
+            } else {
+                throw new Error("Unable to parse silver price."); // Trigger fallback
             }
+
+            calculateValues();
+        } catch (error) {
+            console.error("Error fetching silver price:", error);
+
+            // Set default price
+            document.getElementById('buyPrice').value = silver_default;
+            document.getElementById('sellPrice').value = (silver_default * 1.05).toFixed(2); // Adding 5% markup for default price
+
+            calculateValues();
         }
+    }
+
 
         function loadSavedPrices() {
             const savedBuyPrice = localStorage.getItem('buyPrice');
