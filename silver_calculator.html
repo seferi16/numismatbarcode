@@ -128,13 +128,11 @@
     </div>
 
     <script>
-        const url = "https://altin.doviz.com/gumus";
-        const proxy = "https://cors-anywhere.herokuapp.com/";
-        // const silverPrice = 34.72;
+    const url = "https://altin.doviz.com/gumus";
+    const proxy = "https://cors-anywhere.herokuapp.com/";
+    const silver_default = 34.75; // Set your default silver price here
 
-        async function fetchSilverPrice() {
-        const silver_default = 34.75; // Set your default silver price here
-
+    async function fetchSilverPrice() {
         try {
             const response = await fetch(proxy + url);
             const html = await response.text();
@@ -146,7 +144,7 @@
             const silverPrice = silverPriceElement ? parseFloat(silverPriceElement.textContent.replace(',', '.')) : null;
 
             if (silverPrice) {
-                document.getElementById('buyPrice').innerHTML = silverPrice;
+                document.getElementById('buyPrice').innerHTML = silverPrice.toFixed(2);
                 document.getElementById('sellPrice').value = (silverPrice * 1.05).toFixed(2); // Adding a 5% markup for sell price
             } else {
                 throw new Error("Unable to parse silver price."); // Trigger fallback
@@ -154,83 +152,88 @@
 
             calculateValues();
         } catch (error) {
+            alert("Error fetching silver price: " + error.message);
             console.error("Error fetching silver price:", error);
 
             // Set default price
-            document.getElementById('buyPrice').value = silver_default;
+            document.getElementById('buyPrice').innerHTML = silver_default.toFixed(2);
             document.getElementById('sellPrice').value = (silver_default * 1.05).toFixed(2); // Adding 5% markup for default price
 
             calculateValues();
         }
     }
 
+    function loadSavedPrices() {
+        const savedBuyPrice = localStorage.getItem('buyPrice');
+        const savedSellPrice = localStorage.getItem('sellPrice');
 
-        function loadSavedPrices() {
-            const savedBuyPrice = localStorage.getItem('buyPrice');
-            const savedSellPrice = localStorage.getItem('sellPrice');
+        if (savedBuyPrice) {
+            document.getElementById('buyPrice').innerHTML = parseFloat(savedBuyPrice).toFixed(2);
+        }
+        if (savedSellPrice) {
+            document.getElementById('sellPrice').value = parseFloat(savedSellPrice).toFixed(2);
+        }
+    }
 
-            if (savedBuyPrice) {
-                document.getElementById('buyPrice').innerHTML = savedBuyPrice;
-            }
-            if (savedSellPrice) {
-                document.getElementById('sellPrice').value = savedSellPrice;
-            }
+    function calculateValues() {
+        const gram = parseFloat(document.getElementById('gram').value) || 1.0;
+        const buyPrice = parseFloat(document.getElementById('buyPrice').innerHTML);
+        const sellPrice = parseFloat(document.getElementById('sellPrice').value);
+
+        if (isNaN(buyPrice) || isNaN(sellPrice)) {
+            alert("Error: Buy price or sell price is not a valid number.");
+            console.error("Invalid buyPrice or sellPrice:", { buyPrice, sellPrice });
+            return;
         }
 
-        function calculateValues() {
-            const gram = parseFloat(document.getElementById('gram').value) || 1.0;
-            const buyPrice = parseFloat(document.getElementById('buyPrice').value);
-            const sellPrice = parseFloat(document.getElementById('sellPrice').value);
+        const purityPercentages = [100, 92, 90, 83.5, 72, 68, 60, 50, 40, 35, 30];
+        const premiumRanges = [1.15, 1.15, 1.15, 1.15, 1.1, 1.1, 1.05, 1.05, 1.00, 1.00, 1.00];
+        const sellPremiumRanges = [1.25, 1.25, 1.25, 1.25, 1.2, 1.2, 1.1, 1.1, 1.1, 1.1, 1.1];
+        const gradeModifiers = [1.05, 1, 1.05]; // Good, Average, Low Grade modifiers
 
-            const purityPercentages = [100, 92, 90, 83.5, 72, 68, 60, 50, 40, 35, 30];
-            const premiumRanges = [1.15, 1.15, 1.15, 1.15, 1.1, 1.1, 1.05, 1.05, 1.00, 1.00, 1.00];
-            const sellPremiumRanges = [1.25, 1.25, 1.25, 1.25, 1.2, 1.2, 1.1, 1.1, 1.1, 1.1, 1.1];
-            const gradeModifiers = [1.05, 1, 1.05]; // Good, Average, Low Grade modifiers
+        const resultsTable = document.getElementById('resultsTable');
+        resultsTable.innerHTML = ''; // Clear previous results
 
-            const resultsTable = document.getElementById('resultsTable');
-            resultsTable.innerHTML = ''; // Clear previous results
+        for (let i = 0; i < purityPercentages.length; i++) {
+            const purity = purityPercentages[i];
+            const premium = premiumRanges[i];
+            const sellPremium = sellPremiumRanges[i];
 
-            for (let i = 0; i < purityPercentages.length; i++) {
-                const purity = purityPercentages[i];
-                const premium = premiumRanges[i];
-                const sellPremium = sellPremiumRanges[i];
+            let goodGrade = (buyPrice * (purity / 100) * premium * gram).toFixed(2);
+            let averageGrade = (buyPrice * (purity / 100) * premium * gram).toFixed(2);
+            let lowGrade = (buyPrice * (purity / 100) * premium * gram).toFixed(2);
 
-                let goodGrade = (buyPrice * (purity / 100) * premium * gram).toFixed(2);
-                let averageGrade = (buyPrice * (purity / 100) * premium * gram).toFixed(2);
-                let lowGrade = (buyPrice * (purity / 100) * premium * gram).toFixed(2);
+            let sellGoodGrade = (sellPrice * (purity / 100) * sellPremium * gram).toFixed(2);
+            let sellAverageGrade = (sellPrice * (purity / 100) * sellPremium * gram).toFixed(2);
+            let sellLowGrade = (sellPrice * (purity / 100) * sellPremium * gram).toFixed(2);
 
-                let sellGoodGrade = (sellPrice * (purity / 100) * sellPremium * gram).toFixed(2);
-                let sellAverageGrade = (sellPrice * (purity / 100) * sellPremium * gram).toFixed(2);
-                let sellLowGrade = (sellPrice * (purity / 100) * sellPremium * gram).toFixed(2);
+            goodGrade = (parseFloat(goodGrade) * gradeModifiers[0]).toFixed(2);
+            averageGrade = (parseFloat(averageGrade) * gradeModifiers[1]).toFixed(2);
+            lowGrade = (parseFloat(lowGrade) / gradeModifiers[2]).toFixed(2);
 
-                goodGrade = (parseFloat(goodGrade) * gradeModifiers[0]).toFixed(2);
-                averageGrade = (parseFloat(averageGrade) * gradeModifiers[1]).toFixed(2);
-                lowGrade = (parseFloat(lowGrade) / gradeModifiers[2]).toFixed(2);
+            sellGoodGrade = (parseFloat(sellGoodGrade) * gradeModifiers[0]).toFixed(2);
+            sellAverageGrade = (parseFloat(sellAverageGrade) * gradeModifiers[1]).toFixed(2);
+            sellLowGrade = (parseFloat(sellLowGrade) / gradeModifiers[2]).toFixed(2);
 
-                sellGoodGrade = (parseFloat(sellGoodGrade) * gradeModifiers[0]).toFixed(2);
-                sellAverageGrade = (parseFloat(sellAverageGrade) * gradeModifiers[1]).toFixed(2);
-                sellLowGrade = (parseFloat(sellLowGrade) / gradeModifiers[2]).toFixed(2);
-
-                resultsTable.innerHTML += `
-                    <tr>
-                        <td>${purity}%</td>
-                        <td><div class="buy">${goodGrade}</div><div class="sell">${sellGoodGrade}</div></td>
-                        <td><div class="buy">${averageGrade}</div><div class="sell">${sellAverageGrade}</div></td>
-                        <td><div class="buy">${lowGrade}</div><div class="sell">${sellLowGrade}</div></td>
-                    </tr>
-                `;
-            }
-            localStorage.setItem('buyPrice', buyPrice);
-            localStorage.setItem('sellPrice', sellPrice);
+            resultsTable.innerHTML += `
+                <tr>
+                    <td>${purity}%</td>
+                    <td><div class="buy">${goodGrade}</div><div class="sell">${sellGoodGrade}</div></td>
+                    <td><div class="buy">${averageGrade}</div><div class="sell">${sellAverageGrade}</div></td>
+                    <td><div class="buy">${lowGrade}</div><div class="sell">${sellLowGrade}</div></td>
+                </tr>
+            `;
         }
+        localStorage.setItem('buyPrice', buyPrice);
+        localStorage.setItem('sellPrice', sellPrice);
+    }
 
-        document.getElementById('buyPrice').addEventListener('input', calculateValues);
-        document.getElementById('sellPrice').addEventListener('input', calculateValues);
-        document.getElementById('gram').addEventListener('input', calculateValues);
+    document.getElementById('gram').addEventListener('input', calculateValues);
 
-        // Initial setup
-        loadSavedPrices();
-        fetchSilverPrice();
-    </script>
+    // Initial setup
+    loadSavedPrices();
+    fetchSilverPrice();
+</script>
+
 </body>
 </html>
