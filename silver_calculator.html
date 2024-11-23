@@ -146,7 +146,7 @@
             const silverPrice = silverPriceElement ? parseFloat(silverPriceElement.textContent.replace(',', '.')) : null;
 
             if (silverPrice) {
-                document.getElementById('buyPrice').value = silverPrice;
+                document.getElementById('buyPrice').innerHTML = silverPrice;
                 document.getElementById('sellPrice').value = (silverPrice * 1.05).toFixed(2); // Adding a 5% markup for sell price
             } else {
                 throw new Error("Unable to parse silver price."); // Trigger fallback
