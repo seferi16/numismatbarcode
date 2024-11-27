@@ -133,25 +133,17 @@
     const silver_default = 34.75; // Set your default silver price here
 
     async function fetchSilverPrice() {
-        try {
-            const response = await fetch(proxy + url);
-            const html = await response.text();
+            try {
+                const response = await fetch('variables.json');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch the JSON file');
+                }
+                const data = await response.json();
+                const silverPrice = data.xagtryg.value;
 
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(html, "text/html");
-
-            const silverPriceElement = doc.querySelector('div[data-socket-key="gumus"][data-socket-attr="s"]');
-            const silverPrice = silverPriceElement ? parseFloat(silverPriceElement.textContent.replace(',', '.')) : null;
-
-            if (silverPrice) {
-                document.getElementById('buyPrice').innerHTML = silverPrice.toFixed(2);
-                document.getElementById('sellPrice').value = (silverPrice * 1.05).toFixed(2); // Adding a 5% markup for sell price
-            } else {
-                throw new Error("Unable to parse silver price."); // Trigger fallback
-            }
-
-            calculateValues();
-        } catch (error) {
+                // Update the HTML with the silver price
+                document.getElementById('silverPrice').textContent = silverPrice;
+            } catch (error) {
             alert("Error fetching silver price: " + error.message);
             console.error("Error fetching silver price:", error);
 
