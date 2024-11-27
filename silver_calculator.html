@@ -142,7 +142,8 @@
                 const silverPrice = data.xagtryg.value;
 
                 // Update the HTML with the silver price
-                document.getElementById('silverPrice').textContent = silverPrice;
+                document.getElementById('buyPrice').textContent = silverPrice;
+                document.getElementById('sellPrice').value = (silverPrice * 1.05).toFixed(2);
             } catch (error) {
             alert("Error fetching silver price: " + error.message);
             console.error("Error fetching silver price:", error);
