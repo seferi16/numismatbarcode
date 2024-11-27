@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gümüş Fiyat Hesaplayıcı</title>
+    <style>
+        /* Reset some default styles */
+        body, h1, h2, table {
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        div {
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .sell, .buy {
+            padding: 5px;
+            margin-bottom: 0px;
+            background-color: rgba(240, 10, 10, 0.7);
+        }
+
+        .sell {
+            background-color: rgba(10, 220, 10, 0.6);
+        }
+
+        h1, h2 {
+            text-align: center;
+            color: #333;
+        }
+
+        label {
+            font-weight: bold;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: center;
+        }
+
+        /* Media query for mobile devices */
+        @media screen and (max-width: 600px) {
+            div {
+                padding: 10px;
+            }
+
+            input[type="number"] {
+                padding: 5px;
+            }
+
+            table {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div>
+    <h1> Numismat.net Gümüş Hesaplama </h1>
+
+
+    <div style="display: flex; align-items: center; justify-content: space-between;">
+        <!-- Display field for buyPrice -->
+        <div style="flex: 1; margin-right: 10px;">
+            <label for="buyPrice">Gram Fiyatı:</label>
+            <div id="buyPrice" style="padding: 10px; border: 1px solid #ccc; border-radius: 4px; background-color: #f9f9f9;">0.00</div>
+        </div>
+        <!-- Input field for gram -->
+        <div style="display: none;">
+            <label for="sellPrice">Sell Price:</label>
+            <input type="number" id="sellPrice" step="0.01">
+        </div>
+        <div style="flex: 1;">
+            <label for="gram">Gram:</label>
+            <input type="number" id="gram" step="0.01" style="width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+    </div>
+</div>
+
+
+    <div>
+        <h2>Fiyat Tablosu</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Saflık Derecesi</th>
+                    <th>Yüksek Kondisyon</th>
+                    <th>Orta Kondisyon</th>
+                    <th>Düşük Kondisyon</th>
+                </tr>
+            </thead>
+            <tbody id="resultsTable">
+                <!-- Results will be displayed here -->
+            </tbody>
+        </table>
+        <a href="https://cors-anywhere.herokuapp.com/corsdemo" target="_blank">Güncel Fiyat için Proxy Aktif etmek gerekebilir.</a>
+    </div>
+
+    <script>
+    const url = "https://altin.doviz.com/gumus";
+    const proxy = "https://cors-anywhere.herokuapp.com/";
+    const silver_default = 34.75; // Set your default silver price here
+
+    async function fetchSilverPrice() {
+        try {
+            const response = await fetch(proxy + url);
+            const html = await response.text();
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+
+            const silverPriceElement = doc.querySelector('div[data-socket-key="gumus"][data-socket-attr="s"]');
+            const silverPrice = silverPriceElement ? parseFloat(silverPriceElement.textContent.replace(',', '.')) : null;
+
+            if (silverPrice) {
+                document.getElementById('buyPrice').innerHTML = silverPrice.toFixed(2);
+                document.getElementById('sellPrice').value = (silverPrice * 1.05).toFixed(2); // Adding a 5% markup for sell price
+            } else {
+                throw new Error("Unable to parse silver price."); // Trigger fallback
+            }
+
+            calculateValues();
+        } catch (error) {
+            alert("Error fetching silver price: " + error.message);
+            console.error("Error fetching silver price:", error);
+
+            // Set default price
+            document.getElementById('buyPrice').innerHTML = silver_default.toFixed(2);
+            document.getElementById('sellPrice').value = (silver_default * 1.05).toFixed(2); // Adding 5% markup for default price
+
+            calculateValues();
+        }
+    }
+
+    function loadSavedPrices() {
+        const savedBuyPrice = localStorage.getItem('buyPrice');
+        const savedSellPrice = localStorage.getItem('sellPrice');
+
+        if (savedBuyPrice) {
+            document.getElementById('buyPrice').innerHTML = parseFloat(savedBuyPrice).toFixed(2);
+        }
+        if (savedSellPrice) {
+            document.getElementById('sellPrice').value = parseFloat(savedSellPrice).toFixed(2);
+        }
+    }
+
+    function calculateValues() {
+        const gram = parseFloat(document.getElementById('gram').value) || 1.0;
+        const buyPrice = parseFloat(document.getElementById('buyPrice').innerHTML);
+        const sellPrice = parseFloat(document.getElementById('sellPrice').value);
+
+        if (isNaN(buyPrice) || isNaN(sellPrice)) {
+            alert("Error: Buy price or sell price is not a valid number.");
+            console.error("Invalid buyPrice or sellPrice:", { buyPrice, sellPrice });
+            return;
+        }
+
+        const purityPercentages = [100, 92, 90, 83.5, 72, 68, 60, 50, 40, 35, 30];
+        const premiumRanges = [1.15, 1.15, 1.15, 1.15, 1.1, 1.1, 1.05, 1.05, 1.00, 1.00, 1.00];
+        const sellPremiumRanges = [1.25, 1.25, 1.25, 1.25, 1.2, 1.2, 1.1, 1.1, 1.1, 1.1, 1.1];
+        const gradeModifiers = [1.05, 1, 1.05]; // Good, Average, Low Grade modifiers
+
+        const resultsTable = document.getElementById('resultsTable');
+        resultsTable.innerHTML = ''; // Clear previous results
+
+        for (let i = 0; i < purityPercentages.length; i++) {
+            const purity = purityPercentages[i];
+            const premium = premiumRanges[i];
+            const sellPremium = sellPremiumRanges[i];
+
+            let goodGrade = (buyPrice * (purity / 100) * premium * gram).toFixed(2);
+            let averageGrade = (buyPrice * (purity / 100) * premium * gram).toFixed(2);
+            let lowGrade = (buyPrice * (purity / 100) * premium * gram).toFixed(2);
+
+            let sellGoodGrade = (sellPrice * (purity / 100) * sellPremium * gram).toFixed(2);
+            let sellAverageGrade = (sellPrice * (purity / 100) * sellPremium * gram).toFixed(2);
+            let sellLowGrade = (sellPrice * (purity / 100) * sellPremium * gram).toFixed(2);
+
+            goodGrade = (parseFloat(goodGrade) * gradeModifiers[0]).toFixed(2);
+            averageGrade = (parseFloat(averageGrade) * gradeModifiers[1]).toFixed(2);
+            lowGrade = (parseFloat(lowGrade) / gradeModifiers[2]).toFixed(2);
+
+            sellGoodGrade = (parseFloat(sellGoodGrade) * gradeModifiers[0]).toFixed(2);
+            sellAverageGrade = (parseFloat(sellAverageGrade) * gradeModifiers[1]).toFixed(2);
+            sellLowGrade = (parseFloat(sellLowGrade) / gradeModifiers[2]).toFixed(2);
+
+            resultsTable.innerHTML += `
+                <tr>
+                    <td>${purity}%</td>
+                    <td><div class="buy">${goodGrade}</div><div class="sell">${sellGoodGrade}</div></td>
+                    <td><div class="buy">${averageGrade}</div><div class="sell">${sellAverageGrade}</div></td>
+                    <td><div class="buy">${lowGrade}</div><div class="sell">${sellLowGrade}</div></td>
+                </tr>
+            `;
+        }
+        localStorage.setItem('buyPrice', buyPrice);
+        localStorage.setItem('sellPrice', sellPrice);
+    }
+
+    document.getElementById('gram').addEventListener('input', calculateValues);
+
+    // Initial setup
+    loadSavedPrices();
+    fetchSilverPrice();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numismat.net Araçları</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: #fff;
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background-color: rgba(10, 36, 48, 0.8);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.4);
+            width: 90%;
+            max-width: 400px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+            color: #efb33b; /* Gold color */
+        }
+
+        p {
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        .nav-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .nav-buttons a {
+            text-decoration: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #fff;
+            background: #efb33b; /* Gold button */
+            padding: 10px 20px;
+            border-radius: 8px;
+            transition: background 0.3s, transform 0.2s;
+            text-align: center;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        .nav-buttons a:hover {
+            background: #e6c200;
+            transform: translateY(-3px);
+        }
+
+        .nav-buttons a:active {
+            transform: translateY(0);
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        footer {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Numismat.net Araçları</h1>
+        <p>Sitemiz ve nümismatlar için hazırladığımız araçlarımızı keşfedin.</p>
+        <div class="nav-buttons">
+            <a href="qrcode_reader.html">QR Okuyucu</a>
+            <a href="silver_calculator.html">Gümüş Hesap Tablosu</a>
+        </div>
+        <footer>&copy; 2024 Numismat.net</footer>
+    </div>
+</body>
+</html>
