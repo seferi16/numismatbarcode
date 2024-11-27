@@ -144,6 +144,7 @@
                 // Update the HTML with the silver price
                 document.getElementById('buyPrice').textContent = silverPrice;
                 document.getElementById('sellPrice').value = (silverPrice * 1.05).toFixed(2);
+                calculateValues();
             } catch (error) {
             alert("Error fetching silver price: " + error.message);
             console.error("Error fetching silver price:", error);
@@ -182,7 +183,7 @@
         const purityPercentages = [100, 92, 90, 83.5, 72, 68, 60, 50, 40, 35, 30];
         const premiumRanges = [1.15, 1.15, 1.15, 1.15, 1.1, 1.1, 1.05, 1.05, 1.00, 1.00, 1.00];
         const sellPremiumRanges = [1.25, 1.25, 1.25, 1.25, 1.2, 1.2, 1.1, 1.1, 1.1, 1.1, 1.1];
-        const gradeModifiers = [1.05, 1, 1.05]; // Good, Average, Low Grade modifiers
+        const gradeModifiers = [1.025, 1, 1.05]; // Good, Average, Low Grade modifiers
 
         const resultsTable = document.getElementById('resultsTable');
         resultsTable.innerHTML = ''; // Clear previous results
