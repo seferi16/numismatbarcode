@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Numismat.net Ürün Tarayıcı</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        /* ... your existing styles ... */
+        .btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+        }
+        .btn-sold {
+            background-color: #28a745; /* Green color for Sold button */
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Numismat.net Ürün Tarayıcı</h1>
+    
+    <div id="info">
+        <img id="product-image" src="placeholder.jpg" alt="Ürün Görseli">
+        <table>
+            <tr><th>Başlık:</th><td id="name-tr">[Henüz taranmadı.]</td></tr>
+            <tr><th>Fiyat:</th><td id="price">[Henüz taranmadı.]</td></tr>
+            <tr><th>Stok Kodu:</th><td id="model">[Henüz taranmadı.]</td></tr>
+        </table>
+        <button id="product-link" class="btn" onclick="goToProduct()" style="display:none;">Ürüne Git</button>
+        <button id="sold-button" class="btn btn-sold" onclick="markAsSold()" style="display:none;">Ürün Satıldı</button>
+        <button id="rescan-button" class="btn" onclick="rescan()">Yeniden Tara</button>
+    </div>
+
+    <div id="reader__scan_region"></div>
+
+    <script defer>
+        // Set your Telegram bot token and chat ID here
+        const TELEGRAM_BOT_TOKEN = '5191762597:AAH6kIJsjfuX6DIbbsfskSrBiNTQI5v8bSk';
+        const TELEGRAM_CHAT_ID = '423739694';
+        const DEFAULT_ZOOM = 2;
+
+        function onScanSuccess(qrMessage) {
+            console.log(`QR Kod tespit edildi: ${qrMessage}`);
+            html5QrcodeScanner.clear(); // Stop scanner after successful read
+            fetchProductData(qrMessage); // Fetch product data
+        }
+
+        const html5QrcodeScanner = new Html5QrcodeScanner("reader__scan_region", { fps: 10, qrbox: 350 });
+        html5QrcodeScanner.render(onScanSuccess, undefined, adjustZoom);
+
+        function adjustZoom() {
+            // Access the media stream from the camera
+            const videoTracks = html5QrcodeScanner.getRunningTrack();
+
+            if (videoTracks && videoTracks.applyConstraints) {
+                videoTracks.applyConstraints({
+                    advanced: [{ zoom: DEFAULT_ZOOM, focusMode:"continous" }]
+                }).catch(error => console.warn("Zoom not supported on this device:", error));
+            } else {
+                console.warn("Zoom adjustment not available.");
+            }
+        }
+
+        function fetchProductData(qrLink) {
+            Papa.parse("products.csv", {
+                download: true,
+                header: true,
+                complete: function(results) {
+                    const rows = results.data;
+                    const product = rows.find(row => row.link === qrLink);
+                    if (product) {
+                        document.getElementById("name-tr").innerText = product.name_tr;
+                        const price = (parseFloat(product.price) * 1.2).toFixed(2); // Add tax to price
+                        document.getElementById("price").innerText = `₺${price}`;
+                        document.getElementById("model").innerText = product.model;
+                        document.getElementById("product-image").src = product.image;
+                        document.getElementById("product-link").style.display = "inline-block";
+                        document.getElementById("sold-button").style.display = "inline-block";
+                        document.getElementById("product-link").setAttribute("data-link", product.link);
+                    } else {
+                        document.getElementById("name-tr").innerText = "[Ürün bulunamadı]";
+                        document.getElementById("price").innerText = "[Ürün bulunamadı]";
+                        document.getElementById("model").innerText = "[Ürün bulunamadı]";
+                        document.getElementById("product-image").src = "placeholder.jpg";
+                        document.getElementById("product-link").style.display = "none";
+                        document.getElementById("sold-button").style.display = "none";
+                    }
+                }
+            });
+        }
+
+        function goToProduct() {
+            const link = document.getElementById("product-link").getAttribute("data-link");
+            if (link) {
+                window.location.href = link;
+            }
+        }
+
+        function markAsSold() {
+            const productName = document.getElementById("name-tr").innerText;
+            const productPrice = document.getElementById("price").innerText;
+            const productModel = document.getElementById("model").innerText;
+
+            const message = `Başlık: ${productName}\n` +
+                            `Fiyat: ${productPrice}\n` +
+                            `Stok Kodu: ${productModel}` +
+                            `Ürün Satıldı!\n\n`;
+
+            // Send message via Telegram API
+            fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: message
+                })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Telegram mesajı başarıyla gönderildi!");
+                } else {
+                    alert("Telegram mesajı gönderilemedi.");
+                }
+            })
+            .catch(error => console.error("Telegram API hatası:", error));
+        }
+
+        function rescan() {
+            html5QrcodeScanner.clear();
+            html5QrcodeScanner.render(onScanSuccess);
+            document.getElementById("name-tr").innerText = "[Henüz taranmadı.]";
+            document.getElementById("price").innerText = "[Henüz taranmadı.]";
+            document.getElementById("model").innerText = "[Henüz taranmadı.]";
+            document.getElementById("product-image").src = "placeholder.jpg";
+            document.getElementById("product-link").style.display = "none";
+            document.getElementById("sold-button").style.display = "none";
+        }
+    </script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        #info {
+            width: 300px;
+            border: 1px solid #ccc;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            text-align: center;
+            background-color: #f9f9f9;
+        }
+
+        #info img {
+            max-width: 100%;
+            margin: 10px auto;
+            display: block;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            font-weight: bold;
+            color: #333;
+            background-color: #e9ecef; /* Light gray background for headers */
+        }
+
+        tr:nth-child(odd) {
+            background-color: #f2f2f2; /* Light gray for odd rows */
+        }
+
+        tr:nth-child(even) {
+            background-color: #ffffff; /* White for even rows */
+        }
+
+        tr:hover {
+            background-color: #d1ecf1; /* Light blue on hover */
+            transition: background-color 0.3s;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            font-size: 16px;
+            margin: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            background-color: #007bff;
+            color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</body>
+</html>
